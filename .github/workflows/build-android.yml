@@ -1,0 +1,48 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download resources (audio + tafsir)
+        run: |
+          mkdir -p assets/remote_audio assets/tafsir
+          # رابط مثال للـ zip الصوتي (استبدل LINK_AUDIO باللينك الفعلي)
+          if [ -n "${{ secrets.AUDIO_ZIP_URL }}" ]; then
+            wget -qO audio_all.zip "${{ secrets.AUDIO_ZIP_URL }}"
+            unzip -o audio_all.zip -d assets/remote_audio || true
+          else
+            echo "No AUDIO_ZIP_URL secret set; skipping audio download"
+          fi
+          # رابط مثال للـ zip التفاسير (استبدل LINK_TAFSIR باللينك الفعلي)
+          if [ -n "${{ secrets.TAFSIR_ZIP_URL }}" ]; then
+            wget -qO tafsir.zip "${{ secrets.TAFSIR_ZIP_URL }}"
+            unzip -o tafsir.zip -d assets/tafsir || true
+          else
+            echo "No TAFSIR_ZIP_URL secret set; skipping tafsir download"
+          fi
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: 'latest'
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: noor-on-noor-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

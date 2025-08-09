@@ -1,0 +1,22 @@
+{
+  "surahs": [
+    {
+      "number": 1,
+      "name": "الفاتحة",
+      "ayahs": [
+        {"number":1,"text":"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"},
+        {"number":2,"text":"الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ"}
+      ],
+      "audio_url": "https://example.com/menshawy/001.mp3"
+    },
+    {
+      "number": 2,
+      "name": "البقرة",
+      "ayahs": [
+        {"number":1,"text":"الم"},
+        {"number":2,"text":"ذَٰلِكَ الْكِتَابُ لَا رَيْبَ ۛ فِيهِ"}
+      ],
+      "audio_url": "https://example.com/menshawy/002.mp3"
+    }
+  ]
+}

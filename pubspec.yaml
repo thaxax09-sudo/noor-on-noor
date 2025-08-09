@@ -1,0 +1,24 @@
+name: noor_alanoor
+description: Noor Ala Noor - offline Quran app with on-demand audio and tafsir
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.0.5
+  just_audio: ^0.9.33
+  share_plus: ^7.0.2
+  path_provider: ^2.0.11
+  http: ^0.13.6
+  connectivity_plus: ^4.0.1
+  flutter_svg: ^2.0.7
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/quran/quran.json
+    - assets/tafsir/
+    - assets/audio/
