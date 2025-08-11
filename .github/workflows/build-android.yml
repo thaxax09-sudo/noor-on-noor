@@ -8,32 +8,59 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Show workspace (debug)
+        run: |
+          echo "PWD: $(pwd)"
+          ls -la
+          echo "pubspec.yaml present?"
+          if [ -f pubspec.yaml ]; then echo "FOUND"; else echo "MISSING"; fi
 
       - name: Download resources (audio + tafsir)
         run: |
-          mkdir -p assets/remote_audio assets/tafsir
-          # رابط مثال للـ zip الصوتي (استبدل LINK_AUDIO باللينك الفعلي)
+          set -e
+          mkdir -p assets/remote_audio assets/tafsir assets/tafsir1
+
+          # AUDIO
           if [ -n "${{ secrets.AUDIO_ZIP_URL }}" ]; then
+            echo "Downloading audio..."
             wget -qO audio_all.zip "${{ secrets.AUDIO_ZIP_URL }}"
             unzip -o audio_all.zip -d assets/remote_audio || true
+            rm -f audio_all.zip || true
           else
-            echo "No AUDIO_ZIP_URL secret set; skipping audio download"
+            echo "No AUDIO_ZIP_URL secret set; skipping audio."
           fi
-          # رابط مثال للـ zip التفاسير (استبدل LINK_TAFSIR باللينك الفعلي)
+
+          # TAFSIR main
           if [ -n "${{ secrets.TAFSIR_ZIP_URL }}" ]; then
+            echo "Downloading TAFSIR (main)..."
             wget -qO tafsir.zip "${{ secrets.TAFSIR_ZIP_URL }}"
             unzip -o tafsir.zip -d assets/tafsir || true
+            rm -f tafsir.zip || true
           else
-            echo "No TAFSIR_ZIP_URL secret set; skipping tafsir download"
+            echo "No TAFSIR_ZIP_URL secret set; skipping tafsir."
+          fi
+
+          # TAFSIR1
+          if [ -n "${{ secrets.TAFSIR1_ZIP_URL }}" ]; then
+            echo "Downloading TAFSIR1..."
+            wget -qO tafsir1.zip "${{ secrets.TAFSIR1_ZIP_URL }}"
+            unzip -o tafsir1.zip -d assets/tafsir1 || true
+            rm -f tafsir1.zip || true
+          else
+            echo "No TAFSIR1_ZIP_URL secret set; skipping tafsir1."
           fi
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: 'latest'
+          # استخدم رقم إصدار ثابت لتجنب خطأ "Unable to determine Flutter version"
+          flutter-version: '3.10.6'
 
       - name: Flutter pub get
         run: flutter pub get
