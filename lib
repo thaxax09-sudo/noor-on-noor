@@ -1,1 +1,121 @@
 
+import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Noor on Noor',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
+      home: const QuranPage(),
+    );
+  }
+}
+
+class QuranPage extends StatefulWidget {
+  const QuranPage({super.key});
+
+  @override
+  State<QuranPage> createState() => _QuranPageState();
+}
+
+class _QuranPageState extends State<QuranPage> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  List<dynamic> _verses = [];
+  Map<String, dynamic> _tafsir = {};
+  String _currentTafsir = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuran();
+    _loadTafsir();
+  }
+
+  Future<void> _loadQuran() async {
+    String quranText = await rootBundle.loadString('assets/quran.json');
+    setState(() {
+      _verses = json.decode(quranText);
+    });
+  }
+
+  Future<void> _loadTafsir() async {
+    String tafsirText = await rootBundle.loadString('assets/tafsir.json');
+    setState(() {
+      _tafsir = json.decode(tafsirText);
+    });
+  }
+
+  void _playAudio(String audioFile) async {
+    await _audioPlayer.stop();
+    await _audioPlayer.play(AssetSource('remote_audio/$audioFile'));
+  }
+
+  void _showTafsir(String verseKey) {
+    setState(() {
+      _currentTafsir = _tafsir[verseKey] ?? "لا يوجد تفسير لهذه الآية";
+    });
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("التفسير"),
+        content: Text(_currentTafsir),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("إغلاق"),
+          )
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("القرآن الكريم"),
+        centerTitle: true,
+      ),
+      body: _verses.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: _verses.length,
+              itemBuilder: (context, index) {
+                var verse = _verses[index];
+                return ListTile(
+                  title: Text(
+                    verse['text'],
+                    textAlign: TextAlign.right,
+                  ),
+                  trailing: Wrap(
+                    spacing: 8,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.play_arrow, color: Colors.green),
+                        onPressed: () => _playAudio("${verse['key']}.mp3"),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.menu_book, color: Colors.blue),
+                        onPressed: () => _showTafsir(verse['key']),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
